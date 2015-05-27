@@ -1,0 +1,130 @@
+`core:AttributeLimit`
+=====================
+
+Filter that limits the attributes that is sent for a user.
+
+If the configuration is empty, the filter will use the attributes configured in the 'attributes' option in the entity  metadata.
+
+The configuration is a list of which attributes should be allowed.
+
+    'authproc' => array(
+        50 => array(
+            'class' => 'core:AttributeLimit',
+            'cn', 'mail'
+        ),
+    ),
+
+No special processing of attribute names is performed. Use for [`core:AttributeMap`](./core:authproc_attributemap) prior 
+to this filter is recommended.
+
+
+Parameters
+----------
+
+`default`
+:   Allow metadata to override attribute release. Attributes can be provided as arguments if no information
+:   is available in the metadata related to attribute release.
+
+`config`
+:   Read from `config-attributelimit.php` to define attribute release filters.
+
+
+Examples
+--------
+
+Limit to the `cn` and `mail` attribute:
+
+    'authproc' => array(
+        50 => array(
+            'class' => 'core:AttributeLimit',
+            'cn', 'mail'
+        ),
+    ),
+
+Allow `eduPersonTargetedID` and `eduPersonAffiliation` by default, but allow metadata to override.
+
+    'authproc' => array(
+        50 => array(
+            'class' => 'core:AttributeLimit',
+	    'default' => TRUE,
+            'eduPersonTargetedID', 'eduPersonAffiliation',
+        ),
+    ),
+
+Don't allow any attributes by default, but allow metadata to override.
+
+    'authproc' => array(
+        50 => array(
+            'class' => 'core:AttributeLimit',
+	    'default' => TRUE,
+        ),
+    ),
+
+Use attribute filtering rules from `config-attributelimit.php`.
+
+    'authproc' => array(
+        50 => array(
+            'class' => 'core:AttributeLimit',
+            'config' => TRUE,
+        ),
+    ),
+
+An attribute list in metadata:
+
+    'authproc' => array(
+        50 => 'core:AttributeLimit',
+    ),
+
+And in saml20-sp-remote.php:
+
+    $metadata['https://saml2sp.example.org'] = array(
+        'AssertionConsumerService' => 'https://saml2sp.example.org/simplesaml/module.php/saml/sp/saml2-acs.php/default-sp',
+        'SingleLogoutService' => 'https://saml2sp.example.org/simplesaml/module.php/saml/sp/saml2-logout.php/default-sp',
+        'attributes' => array('cn', 'mail'),
+    );
+
+
+Configuration File
+------------------
+
+Use of `config-attributelimit.php` can be activated with the use of `'config' => TRUE` within `core:AttributeLimit`.
+
+`filter`
+:   The configuration of *Filters* is a list of rules with priority as *index*. 
+
+### Configuration Items for the Filter
+
+`RegistrationAuthority`
+:   An optional array of Registration Authorities or a single Registration Authority is a string.
+:   To negate the match add the special value `'%not'` to the array.
+
+`entityid`
+:   An optional array of entityIDs to match against the current destination entityID. Can be a single entityID as a string.
+:   To negate the match add the special value `'%not'` to the array.
+
+`EntityCategory`
+:   An optional array of [Entity Category SAML Entity Metadata Attribute Type](http://macedir.org/entity-category/).
+:   Can also be a single values as a string.
+:   The entire list of entity categories is matched against the service.
+:   To combine rules and allow matching on any supplied entity category use the special value `'%or'`. 
+
+    '40' => array(
+        'EntityCategory' => array('
+            'http://federation.example.org/category/animals',
+            'http://federation.example.org/category/dogs',
+            '%or'
+        ),
+        'Attributes' => array('
+            'eduPersonPrincipalName',
+        ),
+    ),
+
+`Attributes`
+:   An array of possible attributes to release as a result of processing this rule. 
+:   In addition to the attribute names the following special values are allowed:
+
+ * `%required`: All attributes that are specificed as `isRequired="true"` in the metadata.
+ * `%requested`: All attributes specificed in the metadata.
+ * `%all`: All generated attributes will be released. Equivalent of not using AttributeLimit.
+
+
