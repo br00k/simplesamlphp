@@ -3,11 +3,11 @@
 /**
  * A filter for limiting which attributes are passed on.
  *
- * @author Olav Morken, UNINETT AS.
+ * @author Brook Schofield, GÉANT
  * @package simpleSAMLphp
  * @version $Id$
  */
-class sspmod_core_Auth_Process_AttributeLimit extends SimpleSAML_Auth_ProcessingFilter {
+class sspmod_core_Auth_Process_AttributeReleasePolicy extends SimpleSAML_Auth_ProcessingFilter {
 
 	/**
 	 * List of attributes which this filter will allow through.
@@ -45,11 +45,11 @@ class sspmod_core_Auth_Process_AttributeLimit extends SimpleSAML_Auth_Processing
 				$this->filterConfig = (bool)$value;
 			} elseif (is_int($index)) {
 				if(!is_string($value)) {
-					throw new SimpleSAML_Error_Exception('AttributeLimit: Invalid attribute name: ' . var_export($value, TRUE));
+					throw new SimpleSAML_Error_Exception('AttributeReleasePolicy: Invalid attribute name: ' . var_export($value, TRUE));
 				}
 				$this->allowedAttributes[] = $value;
 			} else {
-				throw new SimpleSAML_Error_Exception('AttributeLimit: Invalid option: ' . var_export($index, TRUE));
+				throw new SimpleSAML_Error_Exception('AttributeReleasePolicy: Invalid option: ' . var_export($index, TRUE));
 			}
 		}
 	}
@@ -63,9 +63,9 @@ class sspmod_core_Auth_Process_AttributeLimit extends SimpleSAML_Auth_Processing
 	private static function getFilterAllowed(array &$request) {
 
 		$attributes = array();
-		$config = SimpleSAML_Configuration::getConfig('config-attributelimit.php');
+		$config = SimpleSAML_Configuration::getConfig('config-attributereleasepolicy.php');
 		$filterConfig = $config->getArray('filters');
-		$filterOptions = array('entityid','RegistrationAuthority','EntityCategory','Attributes');
+		$filterOptions = array('entityID','RegistrationAuthority','EntityCategory','attributes');
 
 		ksort($filterConfig); // Enuser that the filter is ordered - otherwise we don't need a priority index
 		foreach($filterConfig as $index => $filter) {
@@ -82,18 +82,18 @@ class sspmod_core_Auth_Process_AttributeLimit extends SimpleSAML_Auth_Processing
 				continue;
 			}
 
-			// Check the entityid rule of the filter.
-			//  - there is always an entityid in $request['Destination']
-			//  - skip rule if array test (entityid matches) XNOR (contains %not) 
+			// Check the entityID rule of the filter.
+			//  - there is always an entityID in $request['Destination']
+			//  - skip rule if array test (entityID matches) XNOR (contains %not) 
 			//    (i.e. same result, both true or both false).
 			//  - or skip rule if string test doesn't match
-			if (array_key_exists('entityid',$filter) && (
-				(is_array($filter['entityid']) && 
-					in_array($request['Destination']['entityid'], $filter['entityid'], TRUE) 
-					=== in_array('%not', $filter['entityid'], TRUE))
+			if (array_key_exists('entityID',$filter) && (
+				(is_array($filter['entityID']) && 
+					in_array($request['Destination']['entityID'], $filter['entityID'], TRUE) 
+					=== in_array('%not', $filter['entityID'], TRUE))
 				|| 
-				(is_string($filter['entityid']) && 
-					$request['Destination']['entityid'] !== $filter['entityid'])
+				(is_string($filter['entityID']) && 
+					$request['Destination']['entityID'] !== $filter['entityID'])
 			)) {
 				continue;
 			}
@@ -148,30 +148,30 @@ class sspmod_core_Auth_Process_AttributeLimit extends SimpleSAML_Auth_Processing
 			} 
 
 			// Matched Rule
-			SimpleSAML_Logger::debug("Matched attributelimit filter rule: #".$index);
+			SimpleSAML_Logger::debug("Matched AttributeReleasePolicy filter rule: #".$index);
 
 			// Compile attributes
-			if (array_key_exists('Attributes',$filter)) {
-				if (is_string($filter['Attributes'])) {
-					$filter['Attributes'] = (array)$filter['Attributes'];
+			if (array_key_exists('attributes',$filter)) {
+				if (is_string($filter['attributes'])) {
+					$filter['attributes'] = (array)$filter['attributes'];
 				}
 
-				if (in_array('%all', $filter['Attributes'], TRUE)) {
+				if (in_array('%all', $filter['attributes'], TRUE)) {
 					return NULL;
-				} elseif (in_array('%required', $filter['Attributes'], TRUE)) {
+				} elseif (in_array('%required', $filter['attributes'], TRUE)) {
 					if (array_key_exists('attributes.required',$request['Destination'])) {
 						foreach($request['Destination']['attributes.required'] as $attr => $value) {
 							$attributes[] = $value;
 						}
 					}
-				} elseif (in_array('%requested', $filter['Attributes'], TRUE)) {
+				} elseif (in_array('%requested', $filter['attributes'], TRUE)) {
 					if (array_key_exists('attributes',$request['Destination'])) {
 						foreach($request['Destination']['attributes'] as $attr => $value) {
 							$attributes[] = $value;
 						}
 					}
 				} else {
-					foreach($filter['Attributes'] as $attr => $value) {
+					foreach($filter['attributes'] as $attr => $value) {
 						$attributes[] = $value;
 					}
 				}
@@ -193,13 +193,13 @@ class sspmod_core_Auth_Process_AttributeLimit extends SimpleSAML_Auth_Processing
 	 */
 	private static function getSPIdPAllowed(array &$request) {
 
-		if (array_key_exists('attributes', $request['Destination'])) {
+		if (array_key_exists('Attributes', $request['Destination'])) {
 			/* SP Config. */
-			return $request['Destination']['attributes'];
+			return $request['Destination']['Attributes'];
 		}
-		if (array_key_exists('attributes', $request['Source'])) {
+		if (array_key_exists('Attributes', $request['Source'])) {
 			/* IdP Config. */
-			return $request['Source']['attributes'];
+			return $request['Source']['Attributes'];
 		}
 		return NULL;
 	}
