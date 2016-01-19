@@ -19,7 +19,7 @@ function metarefresh_hook_cron(&$croninfo) {
 		$stateFile = $config->getPathValue('datadir', 'data/') . 'metarefresh-state.php';
 
 		foreach ($sets AS $setkey => $set) {
-			// Only process sets where cron matches the current cron tag.
+			// Only process sets where cron matches the current cron tag
 			$cronTags = $set->getArray('cron');
 			if (!in_array($croninfo['tag'], $cronTags)) continue;
 
@@ -48,7 +48,24 @@ function metarefresh_hook_cron(&$croninfo) {
 			$whitelist = $mconfig->getArray('whitelist', array());
 			$conditionalGET = $mconfig->getBoolean('conditionalGET', FALSE);
 
+			// get global type filters
+			$available_types = array(
+				'saml20-idp-remote',
+				'saml20-sp-remote',
+				'shib13-idp-remote',
+				'shib13-sp-remote',
+				'attributeauthority-remote'
+			);
+			$set_types = $set->getArrayize('types', $available_types);
+
 			foreach($set->getArray('sources') AS $source) {
+
+				// filter metadata by type of entity
+				if (isset($source['types'])) {
+					$metaloader->setTypes($source['types']);
+				} else {
+					$metaloader->setTypes($set_types);
+				}
 
 				# Merge global and src specific blacklists
 				if(isset($source['blacklist'])) {

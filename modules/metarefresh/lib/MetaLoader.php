@@ -1,7 +1,7 @@
 <?php
 /*
  * @author Andreas Åkre Solberg <andreas.solberg@uninett.no>
- * @package simpleSAMLphp
+ * @package SimpleSAMLphp
  */
 class sspmod_metarefresh_MetaLoader {
 
@@ -11,8 +11,13 @@ class sspmod_metarefresh_MetaLoader {
 	private $oldMetadataSrc;
 	private $stateFile;
 	private $changed;
-	private static $types = array('saml20-idp-remote', 'saml20-sp-remote',
-		'shib13-idp-remote', 'shib13-sp-remote', 'attributeauthority-remote');
+	private $types = array(
+		'saml20-idp-remote',
+		'saml20-sp-remote',
+		'shib13-idp-remote',
+		'shib13-sp-remote',
+		'attributeauthority-remote'
+	);
 
 
 	/**
@@ -36,6 +41,33 @@ class sspmod_metarefresh_MetaLoader {
 		$this->state = (isset($state)) ? $state : array();
 
 	}
+
+
+	/**
+	 * Get the types of entities that will be loaded.
+	 *
+	 * @return array The entity types allowed.
+	 */
+	public function getTypes()
+	{
+		return $this->types;
+	}
+
+
+	/**
+	 * Set the types of entities that will be loaded.
+	 *
+	 * @param string|array $types Either a string with the name of one single type allowed, or an array with a list of
+	 * types. Pass an empty array to reset to all types of entities.
+	 */
+	public function setTypes($types)
+	{
+		if (!is_array($types)) {
+			$types = array($types);
+		}
+		$this->types = $types;
+	}
+
 
 	/**
 	 * This function processes a SAML metadata file.
@@ -67,18 +99,18 @@ class sspmod_metarefresh_MetaLoader {
 				$this->addCachedMetadata($source);
 				return;
 			} elseif(!preg_match('@^HTTP/1\.[01]\s200\s@', $responseHeaders[0])) {
-				// Other error.
+				// Other error
 				SimpleSAML_Logger::debug('Error from ' . $source['src'] . ' - attempting to re-use cached metadata');
 				$this->addCachedMetadata($source);
 				return;
 			}
 		} else {
-			/* Local file. */
+			// Local file.
 			$data = file_get_contents($source['src']);
 			$responseHeaders = NULL;
 		}
 
-		/* Everything OK. Proceed. */
+		// Everything OK. Proceed.
 		if (isset($source['conditionalGET']) && $source['conditionalGET']) {
 			// Stale or no metadata, so a fresh copy
 			SimpleSAML_Logger::debug('Downloaded fresh copy');
@@ -176,7 +208,7 @@ class sspmod_metarefresh_MetaLoader {
 
 	private function addCachedMetadata($source) {
 		if(isset($this->oldMetadataSrc)) {
-			foreach(self::$types as $type) {
+			foreach($this->types as $type) {
 				foreach($this->oldMetadataSrc->getMetadataSet($type) as $entity) {
 					if(array_key_exists('metarefresh:src', $entity)) {
 						if($entity['metarefresh:src'] == $source['src']) {
@@ -220,12 +252,14 @@ class sspmod_metarefresh_MetaLoader {
 	 */
 	private function loadXML($data, $source) {
 		$entities = array();
-		$doc = new DOMDocument();
-		$res = $doc->loadXML($data);
-		if($res !== TRUE) {
+		try {
+			$doc = SAML2_DOMDocumentFactory::fromString($data);
+		} catch (Exception $e) {
 			throw new Exception('Failed to read XML from ' . $source['src']);
 		}
-		if($doc->documentElement ===  NULL) throw new Exception('Opened file is not an XML document: ' . $source['src']);
+		if ($doc->documentElement === NULL) {
+			throw new Exception('Opened file is not an XML document: ' . $source['src']);
+		}
 		$entities = SimpleSAML_Metadata_SAMLParser::parseDescriptorsElement($doc->documentElement);
 		return $entities;
 	}
@@ -369,7 +403,7 @@ class sspmod_metarefresh_MetaLoader {
 			}
 		}
 	
-		foreach(self::$types as $type) {
+		foreach($this->types as $type) {
 
 			$filename = $outputDir . '/' . $type . '.php';
 

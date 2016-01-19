@@ -2,11 +2,11 @@
 
 
 
-/* Load simpleSAMLphp, configuration */
+// Load SimpleSAMLphp, configuration
 $config = SimpleSAML_Configuration::getInstance();
 $session = SimpleSAML_Session::getSessionFromRequest();
 
-/* Check if valid local session exists.. */
+// Check if valid local session exists.
 if ($config->getBoolean('admin.protectindexpage', false)) {
     SimpleSAML\Utils\Auth::requireAdmin();
 }
@@ -85,7 +85,7 @@ $functionchecks = array(
 	'simplexml_import_dom' => array('required', 'SimpleXML'),
 	'dom_import_simplexml' => array('required', 'XML DOM'),
 	'preg_match'       => array('required',  'RegEx support'),
-	'mcrypt_module_open'=> array('required',  'MCrypt'),
+	'mcrypt_module_open'=> array('optional',  'MCrypt'),
 	'mysql_connect'    => array('optional',  'MySQL support'),
 );
 if (SimpleSAML_Module::isModuleEnabled('ldap')) {

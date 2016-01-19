@@ -3,7 +3,7 @@
 /**
  * A directory over logout information.
  *
- * @package simpleSAMLphp
+ * @package SimpleSAMLphp
  */
 class sspmod_saml_SP_LogoutStore {
 
@@ -107,7 +107,7 @@ class sspmod_saml_SP_LogoutStore {
 			'now' => gmdate('Y-m-d H:i:s'),
 		);
 
-		/* We request the columns in lowercase in order to be compatible with PostgreSQL. */
+		// We request the columns in lowercase in order to be compatible with PostgreSQL
 		$query = 'SELECT _sessionIndex AS _sessionindex, _sessionId AS _sessionid FROM ' . $store->prefix . '_saml_LogoutStore' .
 			' WHERE _authSource = :_authSource AND _nameId = :_nameId AND _expire >= :now';
 		$query = $store->pdo->prepare($query);
@@ -125,7 +125,7 @@ class sspmod_saml_SP_LogoutStore {
 	/**
 	 * Retrieve all session IDs from a key-value store.
 	 *
-	 * @param SimpleSAML_Store_SQL $store  The datastore.
+	 * @param SimpleSAML_Store $store  The datastore.
 	 * @param string $authId  The authsource ID.
 	 * @param string $nameId  The hash of the users NameID.
 	 * @param array $sessionIndexes  The session indexes.
@@ -172,7 +172,7 @@ class sspmod_saml_SP_LogoutStore {
 
 		$store = SimpleSAML_Store::getInstance();
 		if ($store === FALSE) {
-			/* We don't have a datastore. */
+			// We don't have a datastore.
 			return;
 		}
 
@@ -234,6 +234,7 @@ class sspmod_saml_SP_LogoutStore {
 			/* We cannot fetch all sessions without a SQL store. */
 			return FALSE;
 		} else {
+			/** @var SimpleSAML_Store $sessions At this point the store cannot be false */
 			$sessions = self::getSessionsStore($store, $authId, $strNameId, $sessionIndexes);
 
 		}

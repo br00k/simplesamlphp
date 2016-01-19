@@ -3,7 +3,7 @@
 /**
  * Helper class for simple authentication applications.
  *
- * @package simpleSAMLphp
+ * @package SimpleSAMLphp
  */
 class SimpleSAML_Auth_Simple {
 
@@ -33,7 +33,11 @@ class SimpleSAML_Auth_Simple {
 	 * @return SimpleSAML_Auth_Source  The authentication source.
 	 */
 	public function getAuthSource() {
-		return SimpleSAML_Auth_Source::getById($this->authSource);
+		$as = SimpleSAML_Auth_Source::getById($this->authSource);
+		if ($as === null) {
+			throw new SimpleSAML_Error_Exception('Invalid authentication source: '.$this->authSource);
+		}
+		return $as;
 	}
 
 
@@ -72,7 +76,7 @@ class SimpleSAML_Auth_Simple {
 		$session = SimpleSAML_Session::getSessionFromRequest();
 
 		if ($session->isValid($this->authSource)) {
-			/* Already authenticated. */
+			// Already authenticated
 			return;
 		}
 
@@ -133,7 +137,8 @@ class SimpleSAML_Auth_Simple {
 			$params[SimpleSAML_Auth_State::RESTART] = $restartURL;
 		}
 
-		SimpleSAML_Auth_Default::initLogin($this->authSource, $returnTo, $errorURL, $params);
+		$as = $this->getAuthSource();
+		$as->initLogin($returnTo, $errorURL, $params);
 		assert('FALSE');
 	}
 
@@ -234,11 +239,11 @@ class SimpleSAML_Auth_Simple {
 	public function getAttributes() {
 
 		if (!$this->isAuthenticated()) {
-			/* Not authenticated. */
+			// Not authenticated
 			return array();
 		}
 
-		/* Authenticated. */
+		// Authenticated
 		$session = SimpleSAML_Session::getSessionFromRequest();
 		return $session->getAuthData($this->authSource, 'Attributes');
 	}
