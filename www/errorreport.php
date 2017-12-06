@@ -22,7 +22,7 @@ try {
     $session = SimpleSAML_Session::getSessionFromRequest();
     $data = $session->getData('core:errorreport', $reportId);
 } catch (Exception $e) {
-    SimpleSAML_Logger::error('Error loading error report data: '.var_export($e->getMessage(), true));
+    SimpleSAML\Logger::error('Error loading error report data: '.var_export($e->getMessage(), true));
 }
 
 if ($data === null) {
@@ -101,10 +101,21 @@ $email = trim($email);
 // check that it looks like a valid email address
 if (!preg_match('/\s/', $email) && strpos($email, '@') !== false) {
     $replyto = $email;
-    $from = $email;
 } else {
     $replyto = null;
-    $from = 'no-reply@simplesamlphp.org';
+}
+
+$from = $config->getString('sendmail_from', null);
+if ($from === null || $from === '') {
+    $from = ini_get('sendmail_from');
+    if ($from === '' || $from === false) {
+        $from = 'no-reply@example.org';
+    }
+}
+
+// If no sender email was configured at least set some relevant from address
+if ($from === 'no-reply@example.org' && $replyto !== null) {
+    $from = $replyto;
 }
 
 // send the email
@@ -113,7 +124,7 @@ if ($config->getBoolean('errorreporting', true) && $toAddress !== 'na@example.or
     $email = new SimpleSAML_XHTML_EMail($toAddress, 'SimpleSAMLphp error report', $from);
     $email->setBody($message);
     $email->send();
-    SimpleSAML_Logger::error('Report with id '.$reportId.' sent to <'.$toAddress.'>.');
+    SimpleSAML\Logger::error('Report with id '.$reportId.' sent to <'.$toAddress.'>.');
 }
 
 // redirect the user back to this page to clear the POST request

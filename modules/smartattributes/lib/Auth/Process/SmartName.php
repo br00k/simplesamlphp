@@ -6,7 +6,7 @@
  * @author Andreas Åkre Solberg, UNINETT AS.
  * @package SimpleSAMLphp
  */
-class sspmod_smartattribute_Auth_Process_SmartName extends SimpleSAML_Auth_ProcessingFilter {
+class sspmod_smartattributes_Auth_Process_SmartName extends SimpleSAML_Auth_ProcessingFilter {
 
 	/**
 	 * Attributes which should be added/appended.
@@ -62,8 +62,8 @@ class sspmod_smartattribute_Auth_Process_SmartName extends SimpleSAML_Auth_Proce
 	 * @param array &$request  The current request
 	 */
 	public function process(&$request) {
-		assert('is_array($request)');
-		assert('array_key_exists("Attributes", $request)');
+		assert(is_array($request));
+		assert(array_key_exists('Attributes', $request));
 
 		$attributes =& $request['Attributes'];
 		

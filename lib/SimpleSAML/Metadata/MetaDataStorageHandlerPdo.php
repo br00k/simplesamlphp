@@ -60,7 +60,7 @@ class SimpleSAML_Metadata_MetaDataStorageHandlerPdo extends SimpleSAML_Metadata_
      */
     public function __construct($config)
     {
-        assert('is_array($config)');
+        assert(is_array($config));
 
         $this->db = SimpleSAML\Database::getInstance();
     }
@@ -76,14 +76,15 @@ class SimpleSAML_Metadata_MetaDataStorageHandlerPdo extends SimpleSAML_Metadata_
      *     given file.
      *
      * @throws Exception If a database error occurs.
+     * @throws SimpleSAML_Error_Exception If the metadata can be retrieved from the database, but cannot be decoded.
      */
     private function load($set)
     {
-        assert('is_string($set)');
+        assert(is_string($set));
 
         $tableName = $this->getTableName($set);
 
-        if (!in_array($set, $this->supportedSets)) {
+        if (!in_array($set, $this->supportedSets, true)) {
             return null;
         }
 
@@ -92,7 +93,14 @@ class SimpleSAML_Metadata_MetaDataStorageHandlerPdo extends SimpleSAML_Metadata_
             $metadata = array();
 
             while ($d = $stmt->fetch()) {
-                $metadata[$d['entity_id']] = json_decode($d['entity_data'], true);
+                $data = json_decode($d['entity_data'], true);
+                if ($data === null) {
+                    throw new SimpleSAML_Error_Exception("Cannot decode metadata for entity '${d['entity_id']}'");
+                }
+                if (!array_key_exists('entityid', $data)) {
+                    $data['entityid'] = $d['entity_id'];
+                }
+                $metadata[$d['entity_id']] = $data;
             }
 
             return $metadata;
@@ -111,7 +119,7 @@ class SimpleSAML_Metadata_MetaDataStorageHandlerPdo extends SimpleSAML_Metadata_
      */
     public function getMetadataSet($set)
     {
-        assert('is_string($set)');
+        assert(is_string($set));
 
         if (array_key_exists($set, $this->cachedMetadata)) {
             return $this->cachedMetadata[$set];
@@ -137,7 +145,7 @@ class SimpleSAML_Metadata_MetaDataStorageHandlerPdo extends SimpleSAML_Metadata_
 
     private function generateDynamicHostedEntityID($set)
     {
-        assert('is_string($set)');
+        assert(is_string($set));
 
         // get the configuration
         $baseurl = \SimpleSAML\Utils\HTTP::getBaseURL();
@@ -171,11 +179,11 @@ class SimpleSAML_Metadata_MetaDataStorageHandlerPdo extends SimpleSAML_Metadata_
      */
     public function addEntry($index, $set, $entityData)
     {
-        assert('is_string($index)');
-        assert('is_string($set)');
-        assert('is_array($entityData)');
+        assert(is_string($index));
+        assert(is_string($set));
+        assert(is_array($entityData));
 
-        if (!in_array($set, $this->supportedSets)) {
+        if (!in_array($set, $this->supportedSets, true)) {
             return false;
         }
 
@@ -196,18 +204,18 @@ class SimpleSAML_Metadata_MetaDataStorageHandlerPdo extends SimpleSAML_Metadata_
         );
 
         if ($retrivedEntityIDs !== false && count($retrivedEntityIDs) > 0) {
-            $stmt = $this->db->write(
+            $rows = $this->db->write(
                 "UPDATE $tableName SET entity_data = :entity_data WHERE entity_id = :entity_id",
                 $params
             );
         } else {
-            $stmt = $this->db->write(
+            $rows = $this->db->write(
                 "INSERT INTO $tableName (entity_id, entity_data) VALUES (:entity_id, :entity_data)",
                 $params
             );
         }
 
-        return 1 === $stmt->rowCount();
+        return $rows === 1;
     }
 
 
@@ -221,7 +229,7 @@ class SimpleSAML_Metadata_MetaDataStorageHandlerPdo extends SimpleSAML_Metadata_
      */
     private function getTableName($table)
     {
-        assert('is_string($table)');
+        assert(is_string($table));
 
         return $this->db->applyPrefix(str_replace("-", "_", $this->tablePrefix.$table));
     }
@@ -229,16 +237,29 @@ class SimpleSAML_Metadata_MetaDataStorageHandlerPdo extends SimpleSAML_Metadata_
 
     /**
      * Initialize the configured database
+     *
+     * @return int|false The number of SQL statements successfully executed, false if some error occurred.
      */
     public function initDatabase()
     {
+        $stmt = 0;
+        $fine = true;
         foreach ($this->supportedSets as $set) {
             $tableName = $this->getTableName($set);
-            $this->db->write(
+            $rows = $this->db->write(
                 "CREATE TABLE IF NOT EXISTS $tableName (entity_id VARCHAR(255) PRIMARY KEY NOT NULL, entity_data ".
                 "TEXT NOT NULL)"
             );
+            if ($rows === 0) {
+                $fine = false;
+            } else {
+                $stmt += $rows;
+            }
         }
+        if (!$fine) {
+            return false;
+        }
+        return $stmt;
     }
 
 }

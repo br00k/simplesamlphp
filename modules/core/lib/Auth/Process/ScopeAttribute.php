@@ -30,6 +30,13 @@ class sspmod_core_Auth_Process_ScopeAttribute extends SimpleSAML_Auth_Processing
 	 */
 	private $targetAttribute;
 
+	/**
+	 * Only modify targetAttribute if it doesn't already exist.
+	 *
+	 * @var bool
+	 */
+	private $onlyIfEmpty = false;
+
 
 	/**
 	 * Initialize this filter, parse configuration
@@ -39,13 +46,14 @@ class sspmod_core_Auth_Process_ScopeAttribute extends SimpleSAML_Auth_Processing
 	 */
 	public function __construct($config, $reserved) {
 		parent::__construct($config, $reserved);
-		assert('is_array($config)');
+		assert(is_array($config));
 
 		$config = SimpleSAML_Configuration::loadFromArray($config, 'ScopeAttribute');
 
 		$this->scopeAttribute = $config->getString('scopeAttribute');
 		$this->sourceAttribute = $config->getString('sourceAttribute');
 		$this->targetAttribute = $config->getString('targetAttribute');
+		$this->onlyIfEmpty = $config->getBoolean('onlyIfEmpty', false);
 	}
 
 
@@ -55,8 +63,8 @@ class sspmod_core_Auth_Process_ScopeAttribute extends SimpleSAML_Auth_Processing
 	 * @param array &$request  The current request
 	 */
 	public function process(&$request) {
-		assert('is_array($request)');
-		assert('array_key_exists("Attributes", $request)');
+		assert(is_array($request));
+		assert(array_key_exists('Attributes', $request));
 
 		$attributes =& $request['Attributes'];
 
@@ -70,6 +78,10 @@ class sspmod_core_Auth_Process_ScopeAttribute extends SimpleSAML_Auth_Processing
 
 		if (!isset($attributes[$this->targetAttribute])) {
 			$attributes[$this->targetAttribute] = array();
+		}
+
+		if ($this->onlyIfEmpty and count($attributes[$this->targetAttribute]) > 0) {
+			return;
 		}
 
 		foreach ($attributes[$this->scopeAttribute] as $scope) {

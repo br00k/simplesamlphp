@@ -45,9 +45,9 @@ class sspmod_saml_Auth_Process_ExpectedAuthnContextClassRef extends SimpleSAML_A
     {
         parent::__construct($config, $reserved);
 
-        assert('is_array($config)');
+        assert(is_array($config));
         if (empty($config['accepted'])) {
-            SimpleSAML_Logger::error(
+            SimpleSAML\Logger::error(
                 'ExpectedAuthnContextClassRef: Configuration error. There is no accepted AuthnContextClassRef.'
             );
             throw new SimpleSAML_Error_Exception(
@@ -64,12 +64,12 @@ class sspmod_saml_Auth_Process_ExpectedAuthnContextClassRef extends SimpleSAML_A
      */
     public function process(&$request)
     {
-        assert('is_array($request)');
-        assert('array_key_exists("Attributes", $request)');
+        assert(is_array($request));
+        assert(array_key_exists('Attributes', $request));
 
         $this->AuthnContextClassRef = $request['saml:sp:State']['saml:sp:AuthnContext'];
 
-        if (!in_array($this->AuthnContextClassRef, $this->accepted)) {
+        if (!in_array($this->AuthnContextClassRef, $this->accepted, true)) {
             $this->unauthorized($request);
         }
     }
@@ -89,13 +89,13 @@ class sspmod_saml_Auth_Process_ExpectedAuthnContextClassRef extends SimpleSAML_A
      */
     protected function unauthorized(&$request)
     {
-        SimpleSAML_Logger::error(
+        SimpleSAML\Logger::error(
             'ExpectedAuthnContextClassRef: Invalid authentication context: '.$this->AuthnContextClassRef.
             '. Accepted values are: '.var_export($this->accepted, true)
         );
 
         $id = SimpleSAML_Auth_State::saveState($request, 'saml:ExpectedAuthnContextClassRef:unauthorized');
-        $url = SimpleSAML_Module::getModuleURL(
+        $url = SimpleSAML\Module::getModuleURL(
             'saml/sp/wrong_authncontextclassref.php'
         );
         \SimpleSAML\Utils\HTTP::redirectTrustedURL($url, array('StateId' => $id));

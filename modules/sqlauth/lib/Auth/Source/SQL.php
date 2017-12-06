@@ -44,8 +44,8 @@ class sspmod_sqlauth_Auth_Source_SQL extends sspmod_core_Auth_UserPassBase {
 	 * @param array $config  Configuration.
 	 */
 	public function __construct($info, $config) {
-		assert('is_array($info)');
-		assert('is_array($config)');
+		assert(is_array($info));
+		assert(is_array($config));
 
 		// Call the parent constructor first, as required by the interface
 		parent::__construct($info, $config);
@@ -121,8 +121,8 @@ class sspmod_sqlauth_Auth_Source_SQL extends sspmod_core_Auth_UserPassBase {
 	 * @return array  Associative array with the users attributes.
 	 */
 	protected function login($username, $password) {
-		assert('is_string($username)');
-		assert('is_string($password)');
+		assert(is_string($username));
+		assert(is_string($password));
 
 		$db = $this->connect();
 
@@ -147,12 +147,12 @@ class sspmod_sqlauth_Auth_Source_SQL extends sspmod_core_Auth_UserPassBase {
 				': - Failed to fetch result set: ' . $e->getMessage());
 		}
 
-		SimpleSAML_Logger::info('sqlauth:' . $this->authId . ': Got ' . count($data) .
+		SimpleSAML\Logger::info('sqlauth:' . $this->authId . ': Got ' . count($data) .
 			' rows from database');
 
 		if (count($data) === 0) {
 			/* No rows returned - invalid username/password. */
-			SimpleSAML_Logger::error('sqlauth:' . $this->authId .
+			SimpleSAML\Logger::error('sqlauth:' . $this->authId .
 				': No rows in result set. Probably wrong username/password.');
 			throw new SimpleSAML_Error_Error('WRONGUSERPASS');
 		}
@@ -184,7 +184,7 @@ class sspmod_sqlauth_Auth_Source_SQL extends sspmod_core_Auth_UserPassBase {
 			}
 		}
 
-		SimpleSAML_Logger::info('sqlauth:' . $this->authId . ': Attributes: ' .
+		SimpleSAML\Logger::info('sqlauth:' . $this->authId . ': Attributes: ' .
 			implode(',', array_keys($attributes)));
 
 		return $attributes;

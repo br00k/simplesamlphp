@@ -18,7 +18,7 @@ class sspmod_preprodwarning_Auth_Process_Warning extends SimpleSAML_Auth_Process
 	 * @param array $state  The state of the response.
 	 */
 	public function process(&$state) {
-		assert('is_array($state)');
+		assert(is_array($state));
 
 		if (isset($state['isPassive']) && $state['isPassive'] === TRUE) {
 			// We have a passive request. Skip the warning
@@ -27,7 +27,7 @@ class sspmod_preprodwarning_Auth_Process_Warning extends SimpleSAML_Auth_Process
 
 		// Save state and redirect.
 		$id = SimpleSAML_Auth_State::saveState($state, 'warning:request');
-		$url = SimpleSAML_Module::getModuleURL('preprodwarning/showwarning.php');
+		$url = SimpleSAML\Module::getModuleURL('preprodwarning/showwarning.php');
 		\SimpleSAML\Utils\HTTP::redirectTrustedURL($url, array('StateId' => $id));
 	}
 	

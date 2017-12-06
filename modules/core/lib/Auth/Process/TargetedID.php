@@ -55,7 +55,7 @@ class sspmod_core_Auth_Process_TargetedID extends SimpleSAML_Auth_ProcessingFilt
 	public function __construct($config, $reserved) {
 		parent::__construct($config, $reserved);
 
-		assert('is_array($config)');
+		assert(is_array($config));
 
 		if (array_key_exists('attributename', $config)) {
 			$this->attribute = $config['attributename'];
@@ -79,8 +79,8 @@ class sspmod_core_Auth_Process_TargetedID extends SimpleSAML_Auth_ProcessingFilt
 	 * @param array &$state  The current state.
 	 */
 	public function process(&$state) {
-		assert('is_array($state)');
-		assert('array_key_exists("Attributes", $state)');
+		assert(is_array($state));
+		assert(array_key_exists('Attributes', $state));
 
 		if ($this->attribute === NULL) {
 			if (!array_key_exists('UserID', $state)) {
@@ -124,27 +124,21 @@ class sspmod_core_Auth_Process_TargetedID extends SimpleSAML_Auth_ProcessingFilt
 
 		if ($this->generateNameId) {
 			// Convert the targeted ID to a SAML 2.0 name identifier element
-			$nameId = array(
-				'Format' => SAML2_Const::NAMEID_PERSISTENT,
-				'Value' => $uid,
-			);
+			$nameId = new \SAML2\XML\saml\NameID();
+			$nameId->value = $uid;
+			$nameId->Format = \SAML2\Constants::NAMEID_PERSISTENT;
 
 			if (isset($state['Source']['entityid'])) {
-				$nameId['NameQualifier'] = $state['Source']['entityid'];
+				$nameId->NameQualifier = $state['Source']['entityid'];
 			}
 			if (isset($state['Destination']['entityid'])) {
-				$nameId['SPNameQualifier'] = $state['Destination']['entityid'];
+				$nameId->SPNameQualifier = $state['Destination']['entityid'];
 			}
-
-			$doc = SAML2_DOMDocumentFactory::create();
-			$root = $doc->createElement('root');
-			$doc->appendChild($root);
-
-			SAML2_Utils::addNameId($root, $nameId);
-			$uid = $doc->saveXML($root->firstChild);
+		} else {
+			$nameId = $uid;
 		}
 
-		$state['Attributes']['eduPersonTargetedID'] = array($uid);
+		$state['Attributes']['eduPersonTargetedID'] = array($nameId);
 	}
 
 
@@ -158,7 +152,7 @@ class sspmod_core_Auth_Process_TargetedID extends SimpleSAML_Auth_ProcessingFilt
 	 * @return string  The unique identifier for the entity.
 	 */
 	private static function getEntityId($metadata) {
-		assert('is_array($metadata)');
+		assert(is_array($metadata));
 
 		$id = '';
 

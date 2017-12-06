@@ -37,7 +37,7 @@ class SimpleSAML_Stats
     private static function createOutput(SimpleSAML_Configuration $config)
     {
         $cls = $config->getString('class');
-        $cls = SimpleSAML_Module::resolveClass($cls, 'Stats_Output', 'SimpleSAML_Stats_Output');
+        $cls = SimpleSAML\Module::resolveClass($cls, 'Stats_Output', 'SimpleSAML_Stats_Output');
 
         $output = new $cls($config);
         return $output;
@@ -70,10 +70,10 @@ class SimpleSAML_Stats
      */
     public static function log($event, array $data = array())
     {
-        assert('is_string($event)');
-        assert('!isset($data["op"])');
-        assert('!isset($data["time"])');
-        assert('!isset($data["_id"])');
+        assert(is_string($event));
+        assert(!isset($data['op']));
+        assert(!isset($data['time']));
+        assert(!isset($data['_id']));
 
         if (!self::$initialized) {
             self::initOutputs();

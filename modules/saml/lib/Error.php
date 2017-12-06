@@ -40,15 +40,15 @@ class sspmod_saml_Error extends SimpleSAML_Error_Exception {
 	 * @param Exception|NULL $cause  The cause of this exception. Can be NULL.
 	 */
 	public function __construct($status, $subStatus = NULL, $statusMessage = NULL, Exception $cause = NULL) {
-		assert('is_string($status)');
-		assert('is_null($subStatus) || is_string($subStatus)');
-		assert('is_null($statusMessage) || is_string($statusMessage)');
+		assert(is_string($status));
+		assert($subStatus === null || is_string($subStatus));
+		assert($statusMessage === null || is_string($statusMessage));
 
 		$st = self::shortStatus($status);
-		if ($subStatus !== NULL) {
+		if ($subStatus !== null) {
 			$st .= '/' . self::shortStatus($subStatus);
 		}
-		if ($statusMessage !== NULL) {
+		if ($statusMessage !== null) {
 			$st .= ': ' . $statusMessage;
 		}
 		parent::__construct($st, 0, $cause);
@@ -104,24 +104,25 @@ class sspmod_saml_Error extends SimpleSAML_Error_Exception {
 			// Return the original exception unchanged
 			return $exception;
 
+		// TODO: remove this branch in 2.0
 		} elseif ($exception instanceof SimpleSAML_Error_NoPassive) {
 			$e = new self(
-				SAML2_Const::STATUS_RESPONDER,
-				SAML2_Const::STATUS_NO_PASSIVE,
+				\SAML2\Constants::STATUS_RESPONDER,
+				\SAML2\Constants::STATUS_NO_PASSIVE,
 				$exception->getMessage(),
 				$exception
 				);
+		// TODO: remove this branch in 2.0
 		} elseif ($exception instanceof SimpleSAML_Error_ProxyCountExceeded) {
 			$e = new self(
-				SAML2_Const::STATUS_RESPONDER,
-				SAML2_Const::STATUS_PROXY_COUNT_EXCEEDED,
+				\SAML2\Constants::STATUS_RESPONDER,
+				\SAML2\Constants::STATUS_PROXY_COUNT_EXCEEDED,
 				$exception->getMessage(),
 				$exception
-				);
-
+			);
 		} else {
 			$e = new self(
-				SAML2_Const::STATUS_RESPONDER,
+				\SAML2\Constants::STATUS_RESPONDER,
 				NULL,
 				get_class($exception) . ': ' . $exception->getMessage(),
 				$exception
@@ -154,9 +155,9 @@ class sspmod_saml_Error extends SimpleSAML_Error_Exception {
 		$e = NULL;
 
 		switch ($this->status) {
-		case SAML2_Const::STATUS_RESPONDER:
+		case \SAML2\Constants::STATUS_RESPONDER:
 			switch ($this->subStatus) {
-			case SAML2_Const::STATUS_NO_PASSIVE:
+			case \SAML2\Constants::STATUS_NO_PASSIVE:
 				$e = new SimpleSAML_Error_NoPassive($this->statusMessage, 0, $this);
 				break;
 			}
@@ -181,7 +182,7 @@ class sspmod_saml_Error extends SimpleSAML_Error_Exception {
 	 * @return string  A shorter version of the status code.
 	 */
 	private static function shortStatus($status) {
-		assert('is_string($status)');
+		assert(is_string($status));
 
 		$t = 'urn:oasis:names:tc:SAML:2.0:status:';
 		if (substr($status, 0, strlen($t)) === $t) {

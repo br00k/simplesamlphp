@@ -48,8 +48,8 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 	 * @param array $config  Configuration.
 	 */
 	public function __construct($info, $config) {
-		assert('is_array($info)');
-		assert('is_array($config)');
+		assert(is_array($info));
+		assert(is_array($config));
 
 		// Call the parent constructor first, as required by the interface
 		parent::__construct($info, $config);
@@ -118,7 +118,7 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 		));
 		$result = \SimpleSAML\Utils\HTTP::fetch($url);
 
-		$dom = SAML2_DOMDocumentFactory::fromString($result);
+		$dom = \SAML2\DOMDocumentFactory::fromString($result);
 		$xPath = new DOMXpath($dom);
 		$xPath->registerNamespace("cas", 'http://www.yale.edu/tp/cas');
 		$success = $xPath->query("/cas:serviceResponse/cas:authenticationSuccess/cas:user");
@@ -174,7 +174,7 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 
 		$ticket = $state['cas:ticket'];
 		$stateID = SimpleSAML_Auth_State::saveState($state, self::STAGE_INIT);
-		$service =  SimpleSAML_Module::getModuleURL('cas/linkback.php', array('stateID' => $stateID));
+		$service =  SimpleSAML\Module::getModuleURL('cas/linkback.php', array('stateID' => $stateID));
 		list($username, $casattributes) = $this->casValidation($ticket, $service);
 		$ldapattributes = array();
 		if ($this->_ldapConfig['servers']) {
@@ -194,7 +194,7 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 	 * @param array &$state  Information about the current authentication.
 	 */
 	public function authenticate(&$state) {
-		assert('is_array($state)');
+		assert(is_array($state));
 
 		// We are going to need the authId in order to retrieve this authentication source later
 		$state[self::AUTHID] = $this->authId;
@@ -203,7 +203,7 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 
 
 
-		$serviceUrl = SimpleSAML_Module::getModuleURL('cas/linkback.php', array('stateID' => $stateID));
+		$serviceUrl = SimpleSAML\Module::getModuleURL('cas/linkback.php', array('stateID' => $stateID));
 
 		\SimpleSAML\Utils\HTTP::redirectTrustedURL($this->_loginMethod, array(
 			'service' => $serviceUrl));
@@ -224,7 +224,7 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 	 * @param array &$state  Information about the current logout operation.
 	 */
 	public function logout(&$state) {
-		assert('is_array($state)');
+		assert(is_array($state));
 		$logoutUrl = $this->_casConfig['logout'];
 
 		SimpleSAML_Auth_State::deleteState($state);

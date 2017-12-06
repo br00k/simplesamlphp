@@ -14,15 +14,15 @@
  *
  * @package SimpleSAMLphp
  */
-assert('is_array($this->data["srcMetadata"])');
-assert('is_array($this->data["dstMetadata"])');
-assert('is_string($this->data["yesTarget"])');
-assert('is_array($this->data["yesData"])');
-assert('is_string($this->data["noTarget"])');
-assert('is_array($this->data["noData"])');
-assert('is_array($this->data["attributes"])');
-assert('is_array($this->data["hiddenAttributes"])');
-assert('$this->data["sppp"] === false || is_string($this->data["sppp"])');
+assert(is_array($this->data['srcMetadata']));
+assert(is_array($this->data['dstMetadata']));
+assert(is_string($this->data['yesTarget']));
+assert(is_array($this->data['yesData']));
+assert(is_string($this->data['noTarget']));
+assert(is_array($this->data['noData']));
+assert(is_array($this->data['attributes']));
+assert(is_array($this->data['hiddenAttributes']));
+assert($this->data['sppp'] === false || is_string($this->data['sppp']));
 
 // Parse parameters
 if (array_key_exists('name', $this->data['srcMetadata'])) {
@@ -72,7 +72,7 @@ if (array_key_exists('descr_purpose', $this->data['dstMetadata'])) {
         '{consent:consent:consent_purpose}',
         array(
             'SPNAME' => $dstName,
-            'SPDESC' => $this->getTranslation(
+            'SPDESC' => $this->getTranslator()->getPreferredTranslation(
                 SimpleSAML\Utils\Arrays::arrayize(
                     $this->data['dstMetadata']['descr_purpose'],
                     'en'
@@ -139,6 +139,8 @@ if ($this->data['sppp'] !== false) {
  */
 function present_attributes($t, $attributes, $nameParent)
 {
+    $translator = $t->getTranslator();
+
     $alternate = array('odd', 'even');
     $i = 0;
     $summary = 'summary="' . $t->t('{consent:consent:table_summary}') . '"';
@@ -155,7 +157,7 @@ function present_attributes($t, $attributes, $nameParent)
 
     foreach ($attributes as $name => $value) {
         $nameraw = $name;
-        $name = $t->getAttributeTranslation($parentStr . $nameraw);
+        $name = $translator->getAttributeTranslation($parentStr . $nameraw);
 
         if (preg_match('/^child_/', $nameraw)) {
             // insert child table

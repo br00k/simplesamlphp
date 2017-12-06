@@ -10,9 +10,9 @@ class sspmod_saml_IdP_SQLNameID  {
 	/**
 	 * Create NameID table in SQL, if it is missing.
 	 *
-	 * @param SimpleSAML_Store_SQL $store  The datastore.
+	 * @param \SimpleSAML\Store\SQL $store  The datastore.
 	 */
-	private static function createTable(SimpleSAML_Store_SQL $store) {
+	private static function createTable(\SimpleSAML\Store\SQL $store) {
 
 		if ($store->getTableVersion('saml_PersistentNameID') === 1) {
 			return;
@@ -39,12 +39,12 @@ class sspmod_saml_IdP_SQLNameID  {
 	 *
 	 * Will also ensure that the NameID table is present.
 	 *
-	 * @return SimpleSAML_Store_SQL  SQL datastore.
+	 * @return \SimpleSAML\Store\SQL  SQL datastore.
 	 */
 	private static function getStore() {
 
-		$store = SimpleSAML_Store::getInstance();
-		if (!($store instanceof SimpleSAML_Store_SQL)) {
+		$store = \SimpleSAML\Store::getInstance();
+		if (!($store instanceof \SimpleSAML\Store\SQL)) {
 			throw new SimpleSAML_Error_Exception('SQL NameID store requires SimpleSAMLphp to be configured with a SQL datastore.');
 		}
 
@@ -57,17 +57,17 @@ class sspmod_saml_IdP_SQLNameID  {
 	/**
 	 * Add a NameID into the database.
 	 *
-	 * @param SimpleSAML_Store_SQL $store  The data store.
+	 * @param \SimpleSAML\Store\SQL $store  The data store.
 	 * @param string $idpEntityId  The IdP entityID.
 	 * @param string $spEntityId  The SP entityID.
 	 * @param string $user  The user's unique identificator (e.g. username).
 	 * @param string $value  The NameID value.
 	 */
 	public static function add($idpEntityId, $spEntityId, $user, $value) {
-		assert('is_string($idpEntityId)');
-		assert('is_string($spEntityId)');
-		assert('is_string($user)');
-		assert('is_string($value)');
+		assert(is_string($idpEntityId));
+		assert(is_string($spEntityId));
+		assert(is_string($user));
+		assert(is_string($value));
 
 		$store = self::getStore();
 
@@ -93,9 +93,9 @@ class sspmod_saml_IdP_SQLNameID  {
 	 * @return string|NULL $value  The NameID value, or NULL of no NameID value was found.
 	 */
 	public static function get($idpEntityId, $spEntityId, $user) {
-		assert('is_string($idpEntityId)');
-		assert('is_string($spEntityId)');
-		assert('is_string($user)');
+		assert(is_string($idpEntityId));
+		assert(is_string($spEntityId));
+		assert(is_string($user));
 
 		$store = self::getStore();
 
@@ -127,9 +127,9 @@ class sspmod_saml_IdP_SQLNameID  {
 	 * @param string $user  The user's unique identificator (e.g. username).
 	 */
 	public static function delete($idpEntityId, $spEntityId, $user) {
-		assert('is_string($idpEntityId)');
-		assert('is_string($spEntityId)');
-		assert('is_string($user)');
+		assert(is_string($idpEntityId));
+		assert(is_string($spEntityId));
+		assert(is_string($user));
 
 		$store = self::getStore();
 
@@ -153,8 +153,15 @@ class sspmod_saml_IdP_SQLNameID  {
 	 * @return array  Array of userid => NameID.
 	 */
 	public static function getIdentities($idpEntityId, $spEntityId) {
-		assert('is_string($idpEntityId)');
-		assert('is_string($spEntityId)');
+		assert(is_string($idpEntityId));
+		assert(is_string($spEntityId));
+
+		$store = self::getStore();
+
+		$params = array(
+			'_idp' => $idpEntityId,
+			'_sp' => $spEntityId,
+		);
 
 		$query = 'SELECT _user, _value FROM ' . $store->prefix . '_saml_PersistentNameID WHERE _idp = :_idp AND _sp = :_sp';
 		$query = $store->pdo->prepare($query);

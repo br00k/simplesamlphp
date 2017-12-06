@@ -27,8 +27,8 @@ class SimpleSAML_Error_AuthSource extends SimpleSAML_Error_Error {
 	 * @param string $reason  Description of the error.
 	 */
 	public function __construct($authsource, $reason, $cause = NULL) {
-		assert('is_string($authsource)');
-		assert('is_string($reason)');
+		assert(is_string($authsource));
+		assert(is_string($reason));
 
 		$this->authsource = $authsource;
 		$this->reason = $reason;
@@ -40,6 +40,8 @@ class SimpleSAML_Error_AuthSource extends SimpleSAML_Error_Error {
 			),
 			$cause
 		);
+
+		$this->message = "Error with authentication source '$authsource': $reason";
 	}
 
 

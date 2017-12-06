@@ -6,11 +6,11 @@
  * @package SimpleSAMLphp
  */
 
-if (!is_string($_REQUEST['ReturnTo'])) {
+if (!isset($_REQUEST['ReturnTo'])) {
 	throw new SimpleSAML_Error_BadRequest('Missing ReturnTo parameter.');
 }
 
-if (!is_string($_REQUEST['AuthId'])) {
+if (!isset($_REQUEST['AuthId'])) {
 	throw new SimpleSAML_Error_BadRequest('Missing AuthId parameter.');
 }
 
@@ -29,7 +29,7 @@ if (!empty($_REQUEST['saml:idp'])) {
 	$options['saml:idp'] = $_REQUEST['saml:idp'];
 }
 
-$as = new SimpleSAML_Auth_Simple($_REQUEST['AuthId']);
+$as = new \SimpleSAML\Auth\Simple($_REQUEST['AuthId']);
 $as->requireAuth($options);
 
 \SimpleSAML\Utils\HTTP::redirectTrustedURL($options['ReturnTo']);

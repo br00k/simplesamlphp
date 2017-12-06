@@ -1,4 +1,5 @@
 <?php
+use SimpleSAML\Bindings\Shib13\HTTPPost;
 
 /**
  * IdP implementation for SAML 1.1 protocol.
@@ -13,17 +14,17 @@ class sspmod_saml_IdP_SAML1 {
 	 * @param array $state  The authentication state.
 	 */
 	public static function sendResponse(array $state) {
-		assert('isset($state["Attributes"])');
-		assert('isset($state["SPMetadata"])');
-		assert('isset($state["saml:shire"])');
-		assert('array_key_exists("saml:target", $state)'); // Can be NULL
+		assert(isset($state['Attributes']));
+		assert(isset($state['SPMetadata']));
+		assert(isset($state['saml:shire']));
+		assert(array_key_exists('saml:target', $state)); // Can be NULL
 
 		$spMetadata = $state["SPMetadata"];
 		$spEntityId = $spMetadata['entityid'];
 		$spMetadata = SimpleSAML_Configuration::loadFromArray($spMetadata,
 			'$metadata[' . var_export($spEntityId, TRUE) . ']');
 
-		SimpleSAML_Logger::info('Sending SAML 1.1 Response to ' . var_export($spEntityId, TRUE));
+		SimpleSAML\Logger::info('Sending SAML 1.1 Response to ' . var_export($spEntityId, TRUE));
 
 		$attributes = $state['Attributes'];
 		$shire = $state['saml:shire'];
@@ -47,10 +48,10 @@ class sspmod_saml_IdP_SAML1 {
 		SimpleSAML_Stats::log('saml:idp:Response', $statsData);
 
 		// Generate and send response.
-		$ar = new SimpleSAML_XML_Shib13_AuthnResponse();
+		$ar = new \SimpleSAML\XML\Shib13\AuthnResponse();
 		$authnResponseXML = $ar->generate($idpMetadata, $spMetadata, $shire, $attributes);
 
-		$httppost = new SimpleSAML_Bindings_Shib13_HTTPPost($config, $metadata);
+		$httppost = new HTTPPost($config, $metadata);
 		$httppost->sendResponse($authnResponseXML, $idpMetadata, $spMetadata, $target, $shire);
 	}
 
@@ -89,7 +90,7 @@ class sspmod_saml_IdP_SAML1 {
 			$target = NULL;
 		}
 
-		SimpleSAML_Logger::info('Shib1.3 - IdP.SSOService: Got incoming Shib authnRequest from ' . var_export($spEntityId, TRUE) . '.');
+		SimpleSAML\Logger::info('Shib1.3 - IdP.SSOService: Got incoming Shib authnRequest from ' . var_export($spEntityId, TRUE) . '.');
 
 		$metadata = SimpleSAML_Metadata_MetaDataStorageHandler::getMetadataHandler();
 		$spMetadata = $metadata->getMetaDataConfig($spEntityId, 'shib13-sp-remote');

@@ -38,7 +38,7 @@ class sspmod_core_Auth_Process_ScopeFromAttribute extends SimpleSAML_Auth_Proces
 	 */
 	public function __construct($config, $reserved) {
 		parent::__construct($config, $reserved);
-		assert('is_array($config)');
+		assert(is_array($config));
 
 		$config = SimpleSAML_Configuration::loadFromArray($config, 'ScopeFromAttribute');
 		$this->targetAttribute = $config->getString('targetAttribute');
@@ -52,8 +52,8 @@ class sspmod_core_Auth_Process_ScopeFromAttribute extends SimpleSAML_Auth_Proces
 	 * @param array &$request  The current request
 	 */
 	public function process(&$request) {
-		assert('is_array($request)');
-		assert('array_key_exists("Attributes", $request)');
+		assert(is_array($request));
+		assert(array_key_exists('Attributes', $request));
 
 		$attributes =& $request['Attributes'];
 
@@ -76,11 +76,11 @@ class sspmod_core_Auth_Process_ScopeFromAttribute extends SimpleSAML_Auth_Proces
 			$attributes[$this->targetAttribute] = array();
 			$scope = substr($sourceAttrVal, $scopeIndex+1);
 			$attributes[$this->targetAttribute][] = $scope;
-			SimpleSAML_Logger::debug('ScopeFromAttribute: Inserted new attribute ' .
+			SimpleSAML\Logger::debug('ScopeFromAttribute: Inserted new attribute ' .
 			                         $this->targetAttribute . ', with scope ' .
 			                         $scope);
 		} else {
-			SimpleSAML_Logger::warning('ScopeFromAttribute: The configured source attribute ' .
+			SimpleSAML\Logger::warning('ScopeFromAttribute: The configured source attribute ' .
 			                           $this->sourceAttribute .
 			                           ' does not have a scope. Did not add attribute ' .
 			                           $this->targetAttribute . '.');
