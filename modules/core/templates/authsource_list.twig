@@ -1,0 +1,14 @@
+{% set pagetitle = 'Test authentication sources'|trans %}
+
+{% extends "@core/base.twig" %}
+{% block content %}
+
+<h1>{{ 'Test authentication sources'|trans }}</h1>
+
+<ul>
+    {% for source in sources %}
+        <li><a href="?as={{ source|url_encode|e }}">{{ source|e }}</a></li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
